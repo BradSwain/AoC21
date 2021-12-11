@@ -261,6 +261,18 @@ mod day5 {
 }
 
 mod day6 {
+    fn after_n_days(fish: [usize; 9], n: usize) -> usize {
+        let mut fish = fish.clone();
+        for _i in 0..n {
+            let new_fish = fish[0];
+            fish.rotate_left(1);
+            fish[8] = new_fish;
+            fish[6] += new_fish;
+        }
+
+        fish.iter().sum()
+    }
+
     pub fn day_6(input: &str) {
         let mut fish = [0; 9];
 
@@ -268,29 +280,8 @@ mod day6 {
             fish[n] += 1;
         }
 
-        for _i in 0..80 {
-            let new_fish = fish[0];
-            fish.rotate_left(1);
-            fish[8] = new_fish;
-            //fish[7] = 0;
-            fish[6] += new_fish;
-        }
-
-        let part1: usize = fish.iter().sum();
-
-        fish = [0; 9];
-        for n in input.split(',').map(|s| s.parse::<usize>().unwrap()) {
-            fish[n] += 1;
-        }
-
-        for _i in 0..256 {
-            let new_fish = fish[0];
-            fish.rotate_left(1);
-            fish[8] = new_fish;
-
-            fish[6] += new_fish;
-        }
-        let part2: usize = fish.iter().sum();
+        let part1 = after_n_days(fish, 80);
+        let part2 = after_n_days(fish, 256);
 
         println!("---Day 6---");
         println!("Part 1: {}", part1);
