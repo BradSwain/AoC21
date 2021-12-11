@@ -289,9 +289,64 @@ mod day6 {
     }
 }
 
+mod day7 {
+    use std::collections::HashMap;
+
+    pub fn day_7(input: &str) {
+        println!("---Day 7---");
+
+        let mut crabs = input
+            .split(',')
+            .map(|s| s.parse::<usize>().unwrap())
+            .collect::<Vec<_>>();
+        crabs.sort();
+
+        let mut cost_cache = HashMap::<usize, usize>::new();
+        let mut part2_move_cost = |distance: usize| -> usize {
+            if let Some(&cost) = cost_cache.get(&distance) {
+                return cost;
+            }
+
+            let cost = (0..distance + 1).sum::<usize>();
+            cost_cache.insert(distance, cost);
+            cost
+        };
+
+        let mut lowest_cost1: usize = crabs.iter().sum::<usize>() + 1; // start at 1 larger than max possible cost
+        let mut lowest_cost2: usize = usize::MAX;
+        let low = *crabs.first().unwrap();
+        let high = *crabs.last().unwrap();
+
+        for pos in low..high + 1 {
+            let mut cost1 = 0;
+            let mut cost2 = 0;
+            for &s in crabs.iter() {
+                let dist = std::cmp::max(pos, s) - std::cmp::min(pos, s);
+                cost1 += dist;
+                cost2 += part2_move_cost(dist);
+            }
+
+            // println!("{} - {}\t({})", pos, cost1, lowest_cost1);
+            // println!("{} - {}\t({})", pos, cost2, lowest_cost2);
+
+            if cost1 < lowest_cost1 {
+                lowest_cost1 = cost1;
+            }
+
+            if cost2 < lowest_cost2 {
+                lowest_cost2 = cost2;
+            }
+        }
+
+        println!("Part 1: {}", lowest_cost1);
+        println!("Part 2: {}", lowest_cost2);
+    }
+}
+
 fn main() {
     println!("Hello, world!");
     day4::day_4(&fs::read_to_string("day4.txt").expect("Could not read file"));
     day5::day_5(&fs::read_to_string("day5.txt").expect("Could not read file"));
     day6::day_6(&fs::read_to_string("day6.txt").expect("Could not read file"));
+    day7::day_7(&fs::read_to_string("day7.txt").expect("Could not read file"));
 }
