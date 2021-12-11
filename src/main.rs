@@ -123,9 +123,145 @@ mod day4 {
     }
 }
 
-mod day5 {}
+mod day5 {
+    use std::collections::HashMap;
+
+    #[derive(Debug, PartialEq, Eq, Hash, Clone)]
+    struct Point {
+        x: usize,
+        y: usize,
+    }
+
+    impl Point {
+        // Turn string of format "1,2" into Point{1,2}
+        fn from_string(s: &str) -> Point {
+            let mut vals = s
+                .split(",")
+                .map(|s| -> usize { s.parse::<usize>().unwrap() });
+
+            let x = vals.next().unwrap();
+            let y = vals.next().unwrap();
+
+            Point { x, y }
+        }
+    }
+
+    #[derive(Debug)]
+    struct Line {
+        start: Point,
+        end: Point,
+    }
+
+    impl Line {
+        fn from_string(s: &str) -> Line {
+            let mut iter = s.split(" -> ");
+            let start = Point::from_string(iter.next().unwrap());
+            let end = Point::from_string(iter.next().unwrap());
+            Line { start, end }
+        }
+
+        fn is_horizontal(&self) -> bool {
+            self.start.y == self.end.y
+        }
+
+        fn is_vertical(&self) -> bool {
+            self.start.x == self.end.x
+        }
+
+        fn points(&self) -> Vec<Point> {
+            let mut points = Vec::new();
+
+            // only handle horizontal/vertical
+            if self.is_horizontal() {
+                let left = std::cmp::min(self.start.x, self.end.x);
+                let right = std::cmp::max(self.start.x, self.end.x);
+                for x in left..right + 1 {
+                    points.push(Point { x, y: self.start.y })
+                }
+            } else if self.is_vertical() {
+                let top = std::cmp::min(self.start.y, self.end.y);
+                let bottom = std::cmp::max(self.start.y, self.end.y);
+                for y in top..bottom + 1 {
+                    points.push(Point { x: self.start.x, y })
+                }
+            } else {
+                let x_op = if self.start.x < self.end.x {
+                    |n: usize| n + 1
+                } else {
+                    |n: usize| n - 1
+                };
+
+                let y_op = if self.start.y < self.end.y {
+                    |n: usize| n + 1
+                } else {
+                    |n: usize| n - 1
+                };
+
+                let mut x = self.start.x;
+                let mut y = self.start.y;
+
+                points.push(self.start.clone());
+
+                while (x, y) != (self.end.x, self.end.y) {
+                    x = x_op(x);
+                    y = y_op(y);
+                    points.push(Point { x, y });
+                }
+            }
+
+            points
+        }
+    }
+
+    pub fn day_5(input: &str) {
+        let points = input
+            .lines()
+            .filter(|&s| !s.is_empty())
+            .map(|line| -> Line { Line::from_string(line) })
+            .collect::<Vec<_>>();
+
+        let mut danger_points = HashMap::<Point, usize>::new();
+        // Part 1 is only on horizontal vertical
+        for line in points
+            .iter()
+            .filter(|&line| line.is_horizontal() || line.is_vertical())
+        {
+            for point in line.points() {
+                (*danger_points.entry(point).or_insert(0)) += 1;
+            }
+        }
+
+        let part1 = danger_points.iter().fold(0, |acc, (_, &count)| -> usize {
+            if count >= 2 {
+                return acc + 1;
+            }
+            return acc;
+        });
+
+        // Part two needs to add only the non-vertical non-horizontal lines
+        for line in points
+            .iter()
+            .filter(|&line| !line.is_horizontal() && !line.is_vertical())
+        {
+            for point in line.points() {
+                (*danger_points.entry(point).or_insert(0)) += 1;
+            }
+        }
+        let part2 = danger_points.iter().fold(0, |acc, (_, &count)| -> usize {
+            if count >= 2 {
+                return acc + 1;
+            }
+            return acc;
+        });
+
+        println!("---Day5---");
+        println!("Part 1: {}", part1);
+        println!("Part 2: {}", part2);
+    }
+}
 
 fn main() {
     println!("Hello, world!");
     day4::day_4(&fs::read_to_string("day4.txt").expect("Could not read file"));
+    day5::day_5(&fs::read_to_string("day5.txt").expect("Could not read file"));
 }
