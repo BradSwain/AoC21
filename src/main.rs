@@ -260,8 +260,47 @@ mod day5 {
     }
 }
 
+mod day6 {
+    pub fn day_6(input: &str) {
+        let mut fish = [0; 9];
+
+        for n in input.split(',').map(|s| s.parse::<usize>().unwrap()) {
+            fish[n] += 1;
+        }
+
+        for _i in 0..80 {
+            let new_fish = fish[0];
+            fish.rotate_left(1);
+            fish[8] = new_fish;
+            //fish[7] = 0;
+            fish[6] += new_fish;
+        }
+
+        let part1: usize = fish.iter().sum();
+
+        fish = [0; 9];
+        for n in input.split(',').map(|s| s.parse::<usize>().unwrap()) {
+            fish[n] += 1;
+        }
+
+        for _i in 0..256 {
+            let new_fish = fish[0];
+            fish.rotate_left(1);
+            fish[8] = new_fish;
+
+            fish[6] += new_fish;
+        }
+        let part2: usize = fish.iter().sum();
+
+        println!("---Day 6---");
+        println!("Part 1: {}", part1);
+        println!("Part 2: {}", part2);
+    }
+}
+
 fn main() {
     println!("Hello, world!");
     day4::day_4(&fs::read_to_string("day4.txt").expect("Could not read file"));
     day5::day_5(&fs::read_to_string("day5.txt").expect("Could not read file"));
+    day6::day_6(&fs::read_to_string("day6.txt").expect("Could not read file"));
 }
